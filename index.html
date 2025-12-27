@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kur’an Okuma Takibi</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2a3cff" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <style>
+    :root{
+      --bg:#0b1020; --text:#e9ecff; --muted:#aeb6e8;
+      --good:#3ee6a6; --bad:#ff5c7a; --warn:#ffd36e;
+      --line:rgba(255,255,255,.10); --btn:#2a3cff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: radial-gradient(1000px 600px at 20% -10%, rgba(42,60,255,.35), transparent 60%),
+                  radial-gradient(900px 600px at 110% 10%, rgba(62,230,166,.22), transparent 55%),
+                  var(--bg);
+      color:var(--text); padding:18px;
+    }
+    .wrap{max-width:980px;margin:0 auto}
+    h1{margin:0;font-size:22px}
+    .sub{color:var(--muted);margin-top:6px;font-size:13px;line-height:1.4}
+    .grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line); border-radius:16px; padding:14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .pill{
+      padding:8px 10px;border-radius:999px;border:1px solid var(--line);
+      background: rgba(255,255,255,.04);font-size:13px;display:inline-flex;gap:8px;align-items:center
+    }
+    .pill b{font-weight:800}
+    button{
+      border:none; background: var(--btn); color:white;
+      padding:10px 12px; border-radius:12px; font-weight:800; cursor:pointer;
+      box-shadow: 0 10px 20px rgba(42,60,255,.25);
+    }
+    button.secondary{background: rgba(255,255,255,.08); border:1px solid var(--line); box-shadow:none}
+    button.danger{background: rgba(255,92,122,.16); border:1px solid rgba(255,92,122,.35); box-shadow:none}
+    input[type="date"], input[type="time"]{
+      background: rgba(255,255,255,.06); color: var(--text);
+      border: 1px solid var(--line); padding:10px 10px; border-radius:12px; outline:none; font-size:14px;
+    }
+    .mini{font-size:12px;color:var(--muted)}
+    .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+    @media (max-width:720px){.kpi{grid-template-columns:1fr 1fr}}
+    @media (max-width:420px){.kpi{grid-template-columns:1fr}}
+    .k{background: rgba(0,0,0,.18); border:1px solid var(--line); border-radius:14px; padding:12px}
+    .k .t{color:var(--muted);font-size:12px}
+    .k .v{font-size:22px;font-weight:900;margin-top:4px}
+    .v.good{color:var(--good)} .v.bad{color:var(--bad)} .v.warn{color:var(--warn)}
+    .list{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;max-height:380px;overflow:auto}
+    .item{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:10px 10px;border:1px solid var(--line);border-radius:14px;background: rgba(0,0,0,.14);
+      margin-bottom:8px;
+    }
+    .item .date{font-weight:850}
+    .tag{
+      font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);
+    }
+    .tag.ok{color:var(--good);border-color:rgba(62,230,166,.35);background:rgba(62,230,166,.10)}
+    .tag.miss{color:var(--bad);border-color:rgba(255,92,122,.35);background:rgba(255,92,122,.10)}
+    .foot{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5}
+    .box{border:1px solid var(--line);border-radius:14px;padding:12px;background: rgba(0,0,0,.14)}
+    .smallgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:520px){.smallgrid{grid-template-columns:1fr}}
+    .okline{color:var(--good);font-weight:850}
+    .badline{color:var(--bad);font-weight:850}
+    .warnline{color:var(--warn);font-weight:850}
+    .statusline{margin-top:8px}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="row">
+      <div>
+        <h1>Kur’an Okuma Takibi</h1>
+        <div class="sub">
+          Başlangıç: <b>21 Aralık 2025</b> — Her gün okuduğunda işaretle. Eksikleri ve zinciri (streak) gör.
+          <br>Kurulum: Tarayıcı menüsü → <b>Ana ekrana ekle</b>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="secondary" id="installBtn" style="display:none">Uygulama olarak yükle</button>
+        <button class="secondary" id="exportBtn">Yedekle (JSON)</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="row" style="align-items:flex-end">
+          <div class="pill"><span>Bugün:</span> <b id="todayLabel">—</b></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+            <button id="toggleTodayBtn">Bugün okudum</button>
+            <button class="secondary" id="viewMissingBtn">Sadece eksikleri göster</button>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="k">
+            <div class="t">Toplam gün (başlangıç→bugün)</div>
+            <div class="v" id="kpiDays">0</div>
+          </div>
+          <div class="k">
+            <div class="t">Okunan gün</div>
+            <div class="v good" id="kpiDone">0</div>
+          </div>
+          <div class="k">
+            <div class="t">Eksik gün</div>
+            <div class="v bad" id="kpiMissing">0</div>
+          </div>
+          <div class="k">
+            <div class="t">Zincir (streak)</div>
+            <div class="v warn" id="kpiStreak">0</div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <span class="mini">Tarih seç:</span>
+            <input type="date" id="datePicker" />
+            <button class="secondary" id="toggleSelectedBtn">Seçili günü işaretle / kaldır</button>
+          </div>
+          <button class="danger" id="resetBtn" title="Tüm işaretleri siler">Sıfırla</button>
+        </div>
+
+        <div class="box" style="margin-top:12px">
+          <div class="row" style="justify-content:flex-start;gap:10px">
+            <div class="pill"><b>Hatırlatıcı</b></div>
+            <span class="mini">Günde 1 bildirim (HTTPS gerekir)</span>
+          </div>
+
+          <div class="smallgrid" style="margin-top:10px">
+            <div>
+              <div class="mini">Saat</div>
+              <input type="time" id="remindTime" value="21:30" />
+            </div>
+            <div>
+              <div class="mini">Durum</div>
+              <div id="remindStatus" class="mini">Kapalı</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+            <button class="secondary" id="enableNotifBtn">Bildirim izni ver</button>
+            <button id="enableReminderBtn">Hatırlatıcıyı aç</button>
+            <button class="secondary" id="disableReminderBtn">Kapat</button>
+          </div>
+
+          <div class="foot">
+            En sağlam: Uygulamayı ana ekrana ekle + bildirim izni ver.
+            Bazı cihazlarda enerji tasarrufu bildirimleri geciktirebilir.
+          </div>
+        </div>
+
+        <div class="box" style="margin-top:12px">
+          <div class="row" style="justify-content:flex-start;gap:10px">
+            <div class="pill"><b>Bulut Yedek (Google)</b></div>
+            <span class="mini">Giriş + senkron</span>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+            <button id="googleLoginBtn" class="secondary">Google ile giriş</button>
+            <button id="googleLogoutBtn" class="secondary" style="display:none">Çıkış</button>
+            <button id="syncBtn">Bulut ile senkron</button>
+          </div>
+
+          <div class="foot statusline" id="cloudStatus">Bulut: Kapalı</div>
+          <div class="foot">
+            Senkron mantığı: Local + Bulut birleşir (union). Yani hiçbir cihazda işaretlediğin gün kaybolmaz.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card">
+        <div class="pill"><span>Gün listesi</span></div>
+        <div class="list" id="dayList"></div>
+        <div class="foot" id="missingSummary"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // === Sabitler ===
+  const START_DATE_ISO = "2025-12-21";
+  const LS_KEY = "kuran_okuma_takip_v3_done";
+  const LS_REMINDER_ON = "kuran_okuma_takip_v3_rem_on";
+  const LS_REMINDER_TIME = "kuran_okuma_takip_v3_rem_time";
+
+  // === Helpers ===
+  const pad = n => String(n).padStart(2, "0");
+  const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const parseISO = iso => { const [y,m,da]=iso.split("-").map(Number); return new Date(y,m-1,da); };
+  const todayMidnight = () => { const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); };
+  const toTR = iso => parseISO(iso).toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric"});
+  const daysBetweenInclusive = (start, end) => {
+    const ms = 24*60*60*1000;
+    const a = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
+    const b = new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime();
+    return Math.floor((b-a)/ms)+1;
+  };
+
+  function loadDoneSet() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return new Set(Array.isArray(arr) ? arr : []);
+    } catch { return new Set(); }
+  }
+  function saveDoneSet(set){ localStorage.setItem(LS_KEY, JSON.stringify([...set].sort())); }
+
+  function buildRange(startISO, endISO){
+    const s=parseISO(startISO), e=parseISO(endISO);
+    const total=daysBetweenInclusive(s,e);
+    const list=[];
+    for(let i=0;i<total;i++){
+      const d=new Date(s.getFullYear(), s.getMonth(), s.getDate()+i);
+      list.push(toISO(d));
+    }
+    return list;
+  }
+
+  // === Streak ===
+  function calcStreaks(range, doneSet){
+    const done = d => doneSet.has(d);
+
+    // current streak: bugün okunmadıysa dünden başlat
+    let current = 0;
+    for (let i = range.length - 1; i >= 0; i--) {
+      if (done(range[i])) current++;
+      else break;
+    }
+    if (current === 0 && range.length >= 2) {
+      let c = 0;
+      for (let i = range.length - 2; i >= 0; i--) {
+        if (done(range[i])) c++;
+        else break;
+      }
+      if (c > 0) current = c;
+    }
+
+    let best = 0, run = 0;
+    for (const day of range){
+      if (done(day)) { run++; best = Math.max(best, run); }
+      else run = 0;
+    }
+    return { current, best };
+  }
+
+  // === UI ===
+  const todayLabel = document.getElementById("todayLabel");
+  const kpiDays = document.getElementById("kpiDays");
+  const kpiDone = document.getElementById("kpiDone");
+  const kpiMissing = document.getElementById("kpiMissing");
+  const kpiStreak = document.getElementById("kpiStreak");
+  const dayList = document.getElementById("dayList");
+  const missingSummary = document.getElementById("missingSummary");
+  const datePicker = document.getElementById("datePicker");
+  const toggleTodayBtn = document.getElementById("toggleTodayBtn");
+  const toggleSelectedBtn = document.getElementById("toggleSelectedBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const viewMissingBtn = document.getElementById("viewMissingBtn");
+  const exportBtn = document.getElementById("exportBtn");
+
+  // Reminder UI
+  const remindTime = document.getElementById("remindTime");
+  const remindStatus = document.getElementById("remindStatus");
+  const enableNotifBtn = document.getElementById("enableNotifBtn");
+  const enableReminderBtn = document.getElementById("enableReminderBtn");
+  const disableReminderBtn = document.getElementById("disableReminderBtn");
+
+  // Install UI
+  const installBtn = document.getElementById("installBtn");
+  let deferredPrompt = null;
+
+  let showOnlyMissing = false;
+
+  function toggleDay(set, iso){
+    if (set.has(iso)) set.delete(iso);
+    else set.add(iso);
+    saveDoneSet(set);
+  }
+
+  function render(){
+    const done = loadDoneSet();
+    const todayISO = toISO(todayMidnight());
+    todayLabel.textContent = toTR(todayISO);
+
+    datePicker.min = START_DATE_ISO;
+    datePicker.max = todayISO;
+    if (!datePicker.value) datePicker.value = todayISO;
+
+    const range = buildRange(START_DATE_ISO, todayISO);
+    const doneCount = range.filter(d => done.has(d)).length;
+    const missing = range.filter(d => !done.has(d));
+    const missingCount = missing.length;
+
+    const { current, best } = calcStreaks(range, done);
+    kpiDays.textContent = range.length;
+    kpiDone.textContent = doneCount;
+    kpiMissing.textContent = missingCount;
+    kpiStreak.textContent = `${current} (en iyi ${best})`;
+
+    toggleTodayBtn.textContent = done.has(todayISO) ? "Bugünü geri al" : "Bugün okudum";
+
+    dayList.innerHTML = "";
+    const listToShow = showOnlyMissing ? missing : range;
+
+    if (missingCount === 0) {
+      missingSummary.innerHTML = `<span class="okline">Hiç eksik gün yok ✅</span>`;
+    } else {
+      const last7 = missing.slice(-7).reverse().map(toTR);
+      missingSummary.innerHTML =
+        `<span class="badline">Eksik: ${missingCount} gün</span><br>` +
+        `<span class="mini">Son eksikler:</span> ${last7.join(" · ")}`;
+    }
+
+    for (const iso of listToShow.slice().reverse()){
+      const isDone = done.has(iso);
+      const item = document.createElement("div");
+      item.className = "item";
+
+      const left = document.createElement("div");
+      left.innerHTML = `<div class="date">${toTR(iso)}</div><div class="mini">${iso}</div>`;
+
+      const right = document.createElement("div");
+      right.style.display="flex";
+      right.style.gap="10px";
+      right.style.alignItems="center";
+      right.style.flexWrap="wrap";
+      right.style.justifyContent="flex-end";
+
+      const tag = document.createElement("div");
+      tag.className = "tag " + (isDone ? "ok" : "miss");
+      tag.textContent = isDone ? "Okudum" : "Eksik";
+
+      const btn = document.createElement("button");
+      btn.className = "secondary";
+      btn.textContent = isDone ? "Geri al" : "İşaretle";
+      btn.onclick = () => { toggleDay(done, iso); render(); };
+
+      right.appendChild(tag);
+      right.appendChild(btn);
+
+      item.appendChild(left);
+      item.appendChild(right);
+      dayList.appendChild(item);
+    }
+
+    const isOn = localStorage.getItem(LS_REMINDER_ON) === "1";
+    const time = localStorage.getItem(LS_REMINDER_TIME) || "21:30";
+    remindTime.value = time;
+    remindStatus.textContent = isOn ? `Açık (${time})` : "Kapalı";
+  }
+
+  // === PWA install ===
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = "inline-flex";
+  });
+  installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.style.display = "none";
+  });
+
+  // === Service Worker ===
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  }
+
+  // === Notifications / Reminder ===
+  async function ensureNotificationPermission(){
+    if (!("Notification" in window)) {
+      alert("Bu cihaz/tarayıcı bildirim desteklemiyor.");
+      return false;
+    }
+    if (Notification.permission === "granted") return true;
+    const res = await Notification.requestPermission();
+    return res === "granted";
+  }
+  function minutesUntilNext(timeHHMM){
+    const [hh, mm] = timeHHMM.split(":").map(Number);
+    const now = new Date();
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0, 0);
+    if (target <= now) target.setDate(target.getDate()+1);
+    return Math.max(1, Math.round((target - now) / 60000));
+  }
+  async function scheduleReminder(){
+    const isOn = localStorage.getItem(LS_REMINDER_ON) === "1";
+    if (!isOn) return;
+
+    const time = localStorage.getItem(LS_REMINDER_TIME) || "21:30";
+    const mins = minutesUntilNext(time);
+
+    if (navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({ type:"SCHEDULE", minutes: mins });
+    } else {
+      setTimeout(() => scheduleReminder(), 1500);
+    }
+  }
+
+  enableNotifBtn.addEventListener("click", async () => {
+    const ok = await ensureNotificationPermission();
+    alert(ok ? "Bildirim izni verildi ✅" : "Bildirim izni verilmedi.");
+  });
+  enableReminderBtn.addEventListener("click", async () => {
+    const ok = await ensureNotificationPermission();
+    if (!ok) return;
+    localStorage.setItem(LS_REMINDER_ON, "1");
+    localStorage.setItem(LS_REMINDER_TIME, remindTime.value || "21:30");
+    render();
+    scheduleReminder();
+    alert("Hatırlatıcı açıldı ✅");
+  });
+  disableReminderBtn.addEventListener("click", async () => {
+    localStorage.setItem(LS_REMINDER_ON, "0");
+    render();
+    if (navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({ type:"CANCEL" });
+    }
+    alert("Hatırlatıcı kapatıldı.");
+  });
+  remindTime.addEventListener("change", () => {
+    localStorage.setItem(LS_REMINDER_TIME, remindTime.value || "21:30");
+    render();
+    if (localStorage.getItem(LS_REMINDER_ON) === "1") scheduleReminder();
+  });
+
+  // === Buttons ===
+  toggleTodayBtn.addEventListener("click", () => {
+    const done = loadDoneSet();
+    const todayISO = toISO(todayMidnight());
+    toggleDay(done, todayISO);
+    render();
+  });
+  toggleSelectedBtn.addEventListener("click", () => {
+    const iso = datePicker.value;
+    if (!iso) return;
+    const done = loadDoneSet();
+    toggleDay(done, iso);
+    render();
+  });
+  resetBtn.addEventListener("click", () => {
+    const ok = confirm("Tüm işaretli günler silinsin mi?");
+    if (!ok) return;
+    localStorage.removeItem(LS_KEY);
+    render();
+    scheduleReminder();
+  });
+  viewMissingBtn.addEventListener("click", () => {
+    showOnlyMissing = !showOnlyMissing;
+    viewMissingBtn.textContent = showOnlyMissing ? "Tüm günleri göster" : "Sadece eksikleri göster";
+    render();
+  });
+  exportBtn.addEventListener("click", () => {
+    const done = [...loadDoneSet()].sort();
+    const data = {
+      app: "Kuran Okuma Takibi",
+      start_date: START_DATE_ISO,
+      exported_at: new Date().toISOString(),
+      done_days: done,
+      reminder: {
+        enabled: localStorage.getItem(LS_REMINDER_ON) === "1",
+        time: localStorage.getItem(LS_REMINDER_TIME) || "21:30"
+      }
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "kuran-okuma-yedek.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // ilk açılış
+  render();
+  scheduleReminder();
+
+  // Dışarıdan (Firebase senkron sonrası) UI yenilemek için:
+  window.__KURAN_APP__ = { render, scheduleReminder, START_DATE_ISO, LS_KEY, LS_REMINDER_ON, LS_REMINDER_TIME };
+})();
+</script>
+
+<!-- ===== Firebase (Google Login + Firestore Sync) ===== -->
+<script type="module">
+  // 🔴 BURASI TEK ZORUNLU YER:
+  // Firebase Console → Project Settings → Your apps → Web app → config
+  // O config’i aşağıdaki objenin içine yapıştır.
+  const firebaseConfig = FIREBASE_CONFIG_HERE;
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  const cloudStatus = document.getElementById("cloudStatus");
+  const loginBtn = document.getElementById("googleLoginBtn");
+  const logoutBtn = document.getElementById("googleLogoutBtn");
+  const syncBtn = document.getElementById("syncBtn");
+
+  const A = window.__KURAN_APP__;
+  const START_DATE_ISO = A.START_DATE_ISO;
+  const LS_KEY = A.LS_KEY;
+  const LS_REMINDER_ON = A.LS_REMINDER_ON;
+  const LS_REMINDER_TIME = A.LS_REMINDER_TIME;
+
+  function setStatus(txt){ if (cloudStatus) cloudStatus.textContent = txt; }
+
+  function loadDoneArray() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch { return []; }
+  }
+  function saveDoneArray(arr) {
+    const uniq = Array.from(new Set(arr)).sort();
+    localStorage.setItem(LS_KEY, JSON.stringify(uniq));
+  }
+  function loadLocalSettings() {
+    return {
+      reminder_enabled: localStorage.getItem(LS_REMINDER_ON) === "1",
+      reminder_time: localStorage.getItem(LS_REMINDER_TIME) || "21:30"
+    };
+  }
+  function saveLocalSettings(s) {
+    localStorage.setItem(LS_REMINDER_ON, s.reminder_enabled ? "1" : "0");
+    localStorage.setItem(LS_REMINDER_TIME, s.reminder_time || "21:30");
+  }
+
+  async function cloudPull(uid) {
+    const ref = doc(db, "users", uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return null;
+    return snap.data();
+  }
+
+  async function cloudPush(uid, payload) {
+    const ref = doc(db, "users", uid);
+    await setDoc(ref, payload, { merge: true });
+  }
+
+  async function syncNow(auto=false) {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Önce Google ile giriş yap.");
+      return;
+    }
+
+    try {
+      setStatus("Bulut: Senkronlanıyor…");
+
+      const localDone = loadDoneArray();
+      const localSettings = loadLocalSettings();
+      const cloud = await cloudPull(user.uid);
+
+      const cloudDone = (cloud?.done_days && Array.isArray(cloud.done_days)) ? cloud.done_days : [];
+      const mergedDone = Array.from(new Set([...localDone, ...cloudDone])).sort();
+
+      const mergedSettings = {
+        reminder_enabled: typeof cloud?.reminder_enabled === "boolean" ? cloud.reminder_enabled : localSettings.reminder_enabled,
+        reminder_time: typeof cloud?.reminder_time === "string" ? cloud.reminder_time : localSettings.reminder_time
+      };
+
+      // Local yaz
+      saveDoneArray(mergedDone);
+      saveLocalSettings(mergedSettings);
+
+      // Bulut yaz
+      await cloudPush(user.uid, {
+        start_date: START_DATE_ISO,
+        done_days: mergedDone,
+        reminder_enabled: mergedSettings.reminder_enabled,
+        reminder_time: mergedSettings.reminder_time,
+        updated_at: serverTimestamp()
+      });
+
+      setStatus(`Bulut: Açık (son senkron: ${new Date().toLocaleString("tr-TR")})`);
+
+      // UI güncelle
+      A.render();
+      A.scheduleReminder();
+
+      if (!auto) alert("Senkron tamam ✅");
+    } catch (e) {
+      console.error(e);
+      setStatus("Bulut: Hata");
+      alert("Senkron sırasında hata oldu.");
+    }
+  }
+
+  loginBtn?.addEventListener("click", async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (e) {
+      console.error(e);
+      alert("Giriş başarısız. (Pop-up engeli olabilir. HTTPS + ana ekrana ekle ile daha sorunsuz.)");
+    }
+  });
+
+  logoutBtn?.addEventListener("click", async () => {
+    await signOut(auth);
+  });
+
+  syncBtn?.addEventListener("click", () => syncNow(false));
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "inline-flex";
+      setStatus(`Bulut: Açık (${user.email || "giriş yapıldı"})`);
+      // girişte otomatik senkron
+      await syncNow(true);
+    } else {
+      loginBtn.style.display = "inline-flex";
+      logoutBtn.style.display = "none";
+      setStatus("Bulut: Kapalı");
+    }
+  });
+</script>
+
+</body>
+</html>
